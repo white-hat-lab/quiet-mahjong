@@ -39,13 +39,13 @@ assert.equal(matchMovedTile(0), false);
 for (let n = 0; n < 100; n++) {
   const data = makeBoard(12);
   assert.equal(data.length, 72);
-  for (let v = 0; v < 12; v++) assert.equal(data.filter(x => x === v).length, 6);
+  for (let v = 0; v < faces.length; v++) assert.equal(data.filter(x => x === v).length, 4);
   let adjacent = 0;
   for (let i = 0; i < data.length; i++) {
     if (i % W < W - 1 && data[i] === data[i + 1]) adjacent++;
     if (i + W < data.length && data[i] === data[i + W]) adjacent++;
   }
-  assert.ok(adjacent >= 2 && adjacent <= 6);
+  assert.ok(adjacent >= 2 && adjacent <= 3);
 }
 `, context);
 console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
