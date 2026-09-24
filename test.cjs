@@ -36,6 +36,12 @@ board = Array(72).fill(null); board[0] = board[7] = 2;
 assert.equal(matchMovedTile(0), false);
 board = Array(72).fill(null); board[0] = board[5] = 2; board[2] = 1;
 assert.equal(matchMovedTile(0), false);
+board = Array(72).fill(null);
+board[0]=1;board[1]=2;board[7]=1;board[8]=2;
+assert.equal(attemptPush(0,1,1),true);
+assert.equal(board.filter(v=>v!==null).length,2);
+assert.equal(board[7],null);
+assert.equal(board[8],2);
 for (let n = 0; n < 100; n++) {
   const data = makeBoard(13);
   assert.equal(data.length, 78);
