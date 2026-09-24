@@ -51,7 +51,12 @@ for (let n = 0; n < 100; n++) {
     if (i % W < W - 1 && data[i] === data[i + 1]) adjacent++;
     if (i + W < data.length && data[i] === data[i + W]) adjacent++;
   }
-  assert.ok(adjacent >= 1 && adjacent <= 2);
+  assert.equal(adjacent, 3);
+  assert.equal(new Set(startingPairs(data).flat()).size, 6);
 }
+const originalRandom=Math.random;
+Math.random=()=>0;
+assert.ok(goodOpening(makeBoard(13)));
+Math.random=originalRandom;
 `, context);
 console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
