@@ -8,14 +8,14 @@ header{flex-shrink:0}h1{font-size:27px;margin:3px 0 2px}.eyebrow{font-size:8px;l
 .stats{margin:0;flex-shrink:0;font-size:12px}.stats strong{font-size:16px}
 #board{flex:1;min-height:0;gap:4px;padding:7px;border-radius:12px;grid-template-rows:repeat(var(--rows,12),minmax(0,1fr));align-items:stretch}
 .tile{aspect-ratio:auto;min-height:0;min-width:0;border-radius:5px;box-shadow:0 2px 0 #b8ac88,0 3px 3px #001f2540}
-.tile .face{font-size:clamp(12px,2.9dvh,30px)}.tile .name{display:none}
+.tile .face{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:clamp(15px,3.3dvh,34px)}.tile .name{display:none}
 #message{flex-shrink:0;min-height:30px;margin:2px 0;font-size:12px;line-height:1.3}
 .actions{flex-shrink:0}button.control{padding:9px;font-size:13px;border-radius:9px}
 details{flex-shrink:0;margin:0;font-size:11px;line-height:1.35;max-height:120px;overflow:auto}details p{margin:6px 0}
 .footer{flex-shrink:0;font-size:9px;margin:0}
 @media(max-height:550px){main{gap:4px;padding:6px 10px}.eyebrow,.footer{display:none}h1{font-size:21px}.stats strong{font-size:13px}#message{font-size:10px;min-height:23px}button.control{padding:6px}#board{gap:3px;padding:5px}.tile .face{font-size:clamp(10px,2.7dvh,20px)}}
 </style></head><body><main><header><div><div class="eyebrow">A LITTLE MOMENT OF CALM</div><h1>Quiet Mahjong</h1></div><span class="badge">Always ad-free</span></header><div class="stats"><span><strong id="remaining">39</strong> pairs left</span></div><div id="board" aria-label="Mahjong board"></div><p id="message" aria-live="polite">Tap identical tiles in the same row or column.</p><div class="actions"><button class="control primary" id="new">New game</button></div><details><summary>How to play</summary><p>Tap two matching tiles in the same row or column, with no tiles between them, to clear the pair. Diagonal matches and paths that turn do not count.</p><p>Drag any tile up, down, left or right. Tiles in front of it move together into available space. If a moved tile lines up with its match along a clear row or column, the pair disappears automatically. If no match is made, the whole group returns to its starting spots. Tiles cannot be pushed beyond the board edge.</p><p>Clear the board at your own pace. Your game saves automatically on this browser.</p></details><div class="footer">No ads · No timer · Just one more pair</div></main><dialog id="confirm"><h2>Start a fresh board?</h2><p>Your current board will be replaced.</p><button id="cancel">Keep playing</button><button id="accept">New board</button></dialog><script>
-const W=6, faces=[['●','ONE DOT','red'],['●●','TWO DOT','blue'],['∴','THREE DOT','green'],['四','FOUR','blue'],['五','FIVE','red'],['六','SIX','green'],['東','EAST','blue'],['南','SOUTH','red'],['西','WEST','green'],['北','NORTH','blue'],['中','DRAGON','red'],['發','GREEN','green'],['七','SEVEN','red'],['八','EIGHT','blue'],['九','NINE','green'],['白','WHITE','blue'],['梅','PLUM','red'],['竹','BAMBOO','green']];
+const W=6, faces=[['🍎','APPLE','red'],['🍌','BANANA','green'],['🍇','GRAPES','blue'],['🍓','STRAWBERRY','red'],['🍋','LEMON','green'],['🥝','KIWI','green'],['🍒','CHERRIES','red'],['🍍','PINEAPPLE','green'],['🦋','BUTTERFLY','blue'],['🐟','FISH','blue'],['🐢','TURTLE','green'],['🐞','LADYBUG','red'],['🌻','SUNFLOWER','green'],['🌵','CACTUS','green'],['⭐','STAR','green'],['🌙','MOON','blue'],['💎','GEM','blue'],['🔑','KEY','red']];
 let board=[],rows=13,selected=null,history=[],highlight=[],pendingRows=13;const $=id=>document.getElementById(id);
 function straight(a,b,data=board){if(a===b)return false;const ar=Math.floor(a/W),br=Math.floor(b/W);if(ar!==br&&a%W!==b%W)return false;const step=ar===br?1:W;for(let i=Math.min(a,b)+step;i<Math.max(a,b);i+=step)if(data[i]!==null)return false;return true}
 function moves(){const out=[];for(let a=0;a<board.length;a++)if(board[a]!==null)for(let b=a+1;b<board.length;b++)if(board[a]===board[b]&&straight(a,b))out.push([a,b]);return out}
@@ -42,5 +42,14 @@ function tap(i){highlight=[];if(selected===null){if(board[i]!==null)selected=i;r
 function newGame(){rows=pendingRows;board=makeBoard(rows);history=[];selected=null;highlight=[];render();save();say('Tap identical tiles in the same row or column.')}
 function requestNew(n){pendingRows=n;if(board.some(v=>v!==null))$('confirm').showModal();else newGame()};$('new').onclick=()=>requestNew(13);$('cancel').onclick=()=>$('confirm').close();$('accept').onclick=()=>{$('confirm').close();newGame()};
 try{const s=JSON.parse(localStorage.getItem('quiet-mahjong-v1'));if(s&&[6,8,10,12,13].includes(s.rows)&&Array.isArray(s.board)&&s.board.length===s.rows*W&&s.board.every(v=>v===null||Number.isInteger(v)&&v>=0&&v<faces.length)){board=s.board;rows=s.rows;history=Array.isArray(s.history)?s.history.filter(b=>Array.isArray(b)&&b.length===board.length&&b.every(v=>v===null||Number.isInteger(v)&&v>=0&&v<faces.length)):[]}}catch{}if(!board.length)newGame();else{render();say('Welcome back. Your board is just as you left it.')}
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>navigator.serviceWorker.ready).then(()=>{document.querySelector('.footer').textContent='No ads · Ready for offline play'}).catch(()=>{});}
+if('serviceWorker' in navigator){
+ const previouslyControlled=Boolean(navigator.serviceWorker.controller);let refreshing=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(previouslyControlled&&!refreshing){refreshing=true;location.reload()}});
+ navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(registration=>{
+  const checkUpdate=()=>{if(navigator.onLine)registration.update().catch(()=>{})};checkUpdate();
+  window.addEventListener('online',checkUpdate);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+  return navigator.serviceWorker.ready;
+ }).then(()=>{document.querySelector('.footer').textContent='Picture tiles · Ready for offline play'}).catch(()=>{});
+}
 </script></body></html>

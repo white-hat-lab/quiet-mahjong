@@ -7,7 +7,7 @@ An ad-free, phone-friendly tile puzzle built with a small static web app. An ind
 - Tap identical tiles in the same row or column with a clear path to remove them.
 - Drag tiles horizontally or vertically. Tiles ahead push together into available space, within the board edges.
 - Matching moved tiles clear automatically. If no match results, the entire group returns to its starting positions.
-- New games contain 78 shuffled tiles across 18 tile varieties, with only one or two adjacent matches at the start. No hints, undo, timers, advertising, or external dependencies.
+- New games contain 78 shuffled tiles across 18 colorful picture varieties, with only one or two adjacent matches at the start. No hints, undo, timers, advertising, or external dependencies.
 - The current board saves in the browser's local storage.
 
 ## Run locally
