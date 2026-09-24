@@ -54,9 +54,37 @@ for (let n = 0; n < 100; n++) {
   assert.equal(adjacent, 3);
   assert.equal(new Set(startingPairs(data).flat()).size, 6);
 }
+// No immediate pair, but sliding can line up the two tiles.
+board=Array(78).fill(null);board[0]=1;board[7]=1;
+let unchanged=JSON.stringify(board);
+assert.equal(moves().length,0);
+assert.equal(hasAvailableMove(board),true);
+assert.equal(JSON.stringify(board),unchanged);
+// A completely blocked board with no adjacent matches has no move.
+board=Array.from({length:72},(_,i)=>i%18);
+assert.equal(hasAvailableMove(board),false);
+// The detector must consider pushed neighbours, not just the dragged tile.
+board=Array(78).fill(null);board[0]=1;board[1]=2;board[8]=2;
+assert.equal(hasAvailableMove(board),true);
+// Empty boards are victories, not stuck boards.
+assert.equal(hasAvailableMove(Array(78).fill(null)),false);
 const originalRandom=Math.random;
 Math.random=()=>0;
 assert.ok(goodOpening(makeBoard(13)));
 Math.random=originalRandom;
 `, context);
 console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
+
+// Verify the visible notice and the automatic restart timing without real waits.
+const endSource=source.slice(source.indexOf('function stopRestart()'),source.indexOf('function newGame()'));
+const elements={stuck:{open:false,showModal(){this.open=true},close(){this.open=false}},confirm:{open:false},'restart-countdown':{textContent:''}};
+let timeout,delay,restarted=0;
+const endContext=vm.createContext({document:{getElementById:id=>elements[id]},setTimeout:(fn,ms)=>{timeout=fn;delay=ms;return 1},setInterval:()=>2,clearTimeout:()=>{},clearInterval:()=>{}});
+vm.runInContext(`let board=[0,1],restartTimer=null,countdownTimer=null,lastChecked='',selected=0,pendingRows=13;const $=id=>document.getElementById(id);function say(){}function hasAvailableMove(){return false}function newGame(){stopRestart();board=[1,1]}${endSource}checkBoardEnd()`,endContext);
+assert.equal(elements.stuck.open,true);
+assert.match(elements['restart-countdown'].textContent,/4 seconds/);
+assert.equal(delay,4000);
+timeout();
+assert.equal(elements.stuck.open,false);
+assert.equal(vm.runInContext('JSON.stringify(board)',endContext),'[1,1]');
+console.log('Passed: no-move detection includes pushes, does not alter the board, and restarts after a visible four-second notice.');

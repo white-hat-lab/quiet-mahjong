@@ -8,6 +8,7 @@ An ad-free, phone-friendly tile puzzle built with a small static web app. An ind
 - Drag tiles horizontally or vertically. Tiles ahead push together into available space, within the board edges.
 - Matching moved tiles clear automatically. If no match results, the entire group returns to its starting positions.
 - New games contain 78 shuffled tiles across 18 classic numbered tile varieties with circle, bamboo and numeral suits, with three separate adjacent matching pairs at the start, so six tiles can be cleared to create space. No hints, undo, timers, advertising, or external dependencies.
+- When no direct match or matching push remains, a notice appears and a new board starts automatically after four seconds.
 - The current board saves in the browser's local storage.
 
 ## Run locally
