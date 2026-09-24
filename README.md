@@ -1,6 +1,6 @@
 # Quiet Mahjong
 
-An ad-free, phone-friendly tile puzzle built with a single HTML file. An independent prototype inspired by straight-line tile matching, with original presentation.
+An ad-free, phone-friendly tile puzzle built with a small static web app. An independent prototype inspired by straight-line tile matching, with original presentation.
 
 ## Play
 
@@ -16,7 +16,7 @@ An ad-free, phone-friendly tile puzzle built with a single HTML file. An indepen
 python3 -m http.server 8765
 ```
 
-Open http://localhost:8765 in a browser. For permanent phone access, publish `index.html` with a static website host. The development tunnel is temporary, and a home-screen shortcut does not provide offline installation.
+Open http://localhost:8765 in a browser. For permanent phone access, publish `index.html` with a static website host. The development tunnel is temporary. The web app includes a manifest and service worker for home-screen installation and offline play after the first successful online load. Wait for “Ready for offline play” before disconnecting. Browser storage removal or eviction can remove downloaded data.
 
 ## Validation
 
