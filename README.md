@@ -7,7 +7,7 @@ An ad-free, phone-friendly tile puzzle built with a small static web app. An ind
 - Tap identical tiles in the same row or column with a clear path to remove them.
 - Drag tiles horizontally or vertically. Tiles ahead push together into available space, within the board edges.
 - Matching moved tiles clear automatically. If no match results, the entire group returns to its starting positions.
-- New games contain 72 shuffled tiles across 18 tile varieties, with only two or three adjacent matches at the start. No hints, undo, timers, advertising, or external dependencies.
+- New games contain 78 shuffled tiles across 18 tile varieties, with only one or two adjacent matches at the start. No hints, undo, timers, advertising, or external dependencies.
 - The current board saves in the browser's local storage.
 
 ## Run locally
@@ -28,4 +28,4 @@ Tests cover matching, group pushing, snap-back, boundaries, and tile distributio
 
 ## Current limitations
 
-Random boards are not guaranteed solvable. The prototype does not reproduce every rule or feature of Big Cake's Daily Mahjong Match. Existing saved boards retain their size; choose New game for a 72-tile board.
+Random boards are not guaranteed solvable. The prototype does not reproduce every rule or feature of Big Cake's Daily Mahjong Match. Existing saved boards retain their size; choose New game for a 78-tile board.
