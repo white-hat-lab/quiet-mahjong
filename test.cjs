@@ -1,0 +1,51 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const source = fs.readFileSync(`${__dirname}/index.html`, 'utf8').split('<script>')[1].split('</script>')[0];
+new vm.Script(source);
+const context = vm.createContext({ assert });
+vm.runInContext(source.slice(0, source.indexOf('function save()')), context);
+vm.runInContext(`
+board = Array(72).fill(null);
+board[18] = 1; board[12] = 2; board[6] = 3;
+let plan = pushPlan(18, -6, 1);
+assert.equal(plan.values[0], 3);
+assert.equal(plan.values[6], 2);
+assert.equal(plan.values[12], 1);
+assert.equal(plan.values[18], null);
+let before = JSON.stringify(board);
+assert.equal(attemptPush(18, -6, 1), false);
+assert.equal(JSON.stringify(board), before);
+board[13] = 1;
+assert.equal(attemptPush(18, -6, 1), true);
+assert.equal(board[12], null);
+assert.equal(board[13], null);
+assert.equal(board[0], 3);
+assert.equal(board[6], 2);
+board = Array(72).fill(null);
+board[0] = 1; board[1] = 2; board[2] = 3;
+plan = pushPlan(0, 1, 1);
+assert.equal(plan.values[1], 1);
+assert.equal(plan.values[2], 2);
+assert.equal(plan.values[3], 3);
+board = Array(72).fill(1);
+assert.equal(pushPlan(18, -6, 5).distance, 0);
+board = Array(72).fill(null); board[5] = 1;
+assert.equal(pushPlan(5, 1, 1).distance, 0);
+board = Array(72).fill(null); board[0] = board[7] = 2;
+assert.equal(matchMovedTile(0), false);
+board = Array(72).fill(null); board[0] = board[5] = 2; board[2] = 1;
+assert.equal(matchMovedTile(0), false);
+for (let n = 0; n < 100; n++) {
+  const data = makeBoard(12);
+  assert.equal(data.length, 72);
+  for (let v = 0; v < 12; v++) assert.equal(data.filter(x => x === v).length, 6);
+  let adjacent = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (i % W < W - 1 && data[i] === data[i + 1]) adjacent++;
+    if (i + W < data.length && data[i] === data[i + W]) adjacent++;
+  }
+  assert.ok(adjacent >= 2 && adjacent <= 6);
+}
+`, context);
+console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
