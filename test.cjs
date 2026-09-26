@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const source = fs.readFileSync(`${__dirname}/index.html`, 'utf8').split('<script>')[1].split('</script>')[0];
 new vm.Script(source);
 const context = vm.createContext({ assert });
+vm.runInContext(fs.readFileSync(`${__dirname}/boards.js`, 'utf8'), context);
 vm.runInContext(source.slice(0, source.indexOf('function save()')), context);
 vm.runInContext(`
 board = Array(72).fill(null);
@@ -60,7 +61,7 @@ assert.equal(matchMovedTile(0),false);
 for (let n = 0; n < 100; n++) {
   const data = makeBoard(13);
   assert.equal(data.length, 78);
-  for (let v = 0; v < faces.length; v++) assert.equal(data.filter(x => x === v).length, v < 3 ? 6 : 4);
+  assert.equal(JSON.stringify(faces.map((_,v)=>data.filter(x=>x===v).length).sort()),JSON.stringify([...Array(15).fill(4),6,6,6]));
   let adjacent = 0;
   for (let i = 0; i < data.length; i++) {
     if (i % W < W - 1 && data[i] === data[i + 1]) adjacent++;
@@ -68,6 +69,21 @@ for (let n = 0; n < 100; n++) {
   }
   assert.equal(adjacent, 3);
   assert.equal(new Set(startingPairs(data).flat()).size, 6);
+}
+// Replay every certified solution, including randomized identities, through the real engine.
+for(const layout of SOLVABLE_BOARDS){
+ assert.ok(goodOpening(layout.tiles));assert.equal(layout.solution.length,39);
+ for(let variant=0;variant<5;variant++){
+  const identities=variant===0?faces.map((_,i)=>i):mix(faces.map((_,i)=>i));
+  board=layout.tiles.map(v=>identities[v]);
+  for(const move of layout.solution){
+   const remaining=board.filter(v=>v!==null).length;
+   assert.ok(hasAvailableMove(board));
+   assert.ok('tap' in move?matchMovedTile(move.tap):attemptPush(move.from,move.step,move.steps));
+   assert.equal(board.filter(v=>v!==null).length,remaining-2);
+  }
+  assert.ok(board.every(v=>v===null));
+ }
 }
 // No immediate pair, but sliding can line up the two tiles.
 board=Array(78).fill(null);board[0]=1;board[7]=1;
@@ -88,7 +104,7 @@ Math.random=()=>0;
 assert.ok(goodOpening(makeBoard(13)));
 Math.random=originalRandom;
 `, context);
-console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
+console.log('Passed: group movement, rollback, matching, boundaries, and 100 starting boards and all 24 complete solutions with five tile remappings each.');
 
 // Verify the bottom notice and automatic restart without a popup.
 const endSource=source.slice(source.indexOf('function stopRestart()'),source.indexOf('function newGame()'));
