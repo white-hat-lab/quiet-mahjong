@@ -42,6 +42,21 @@ assert.equal(attemptPush(0,1,1),true);
 assert.equal(board.filter(v=>v!==null).length,2);
 assert.equal(board[7],null);
 assert.equal(board[8],2);
+// Moving an obstruction reveals stationary matching tiles.
+board=Array(78).fill(null);board[0]=1;board[1]=2;board[2]=1;
+assert.equal(attemptPush(1,6,1),true);
+assert.equal(board[0],null);assert.equal(board[2],null);assert.equal(board[7],2);
+// A stationary pair already clear before the move must not be removed.
+board=Array(78).fill(null);board[0]=1;board[2]=1;board[12]=2;
+before=JSON.stringify(board);assert.equal(attemptPush(12,1,1),false);
+assert.equal(JSON.stringify(board),before);
+// A long drag stops at a valid intermediate alignment.
+board=Array(78).fill(null);board[0]=1;board[7]=1;
+assert.equal(attemptPush(0,1,4),true);
+assert.equal(board.filter(v=>v!==null).length,0);
+// Same numeral in different suits must never match.
+board=Array(78).fill(null);board[0]=0;board[1]=6;
+assert.equal(matchMovedTile(0),false);
 for (let n = 0; n < 100; n++) {
   const data = makeBoard(13);
   assert.equal(data.length, 78);
@@ -88,3 +103,8 @@ assert.equal(vm.runInContext('JSON.stringify(board)',endContext),'[1,1]');
 assert.equal(vm.runInContext('restartTimer',endContext),null);
 assert.ok(!source.includes('id="stuck"'));
 console.log('Passed: bottom-only notice and automatic restart after four seconds.');
+
+// An aligned pair clears with one tap.
+const tapSource=source.slice(source.indexOf('function tap('),source.indexOf('function stopRestart()'));
+vm.runInContext(`function render(){}function save(){}function say(){}${tapSource}board=Array(78).fill(null);board[0]=board[5]=2;selected=null;tap(0);assert.equal(board[0],null);assert.equal(board[5],null);`,context);
+console.log('Passed: revealed pairs, intermediate alignments, unrelated pairs, suit identity, and one-tap matching.');
