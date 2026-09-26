@@ -1,4 +1,4 @@
-const CACHE = 'quiet-mahjong-offline-v9';
+const CACHE = 'quiet-mahjong-offline-v10';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -10,7 +10,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).then(async response => {
+    event.respondWith(fetch(event.request, {cache: 'no-cache'}).then(async response => {
       if (response.ok) {
         const cache = await caches.open(CACHE);
         await cache.put('./index.html', response.clone());
