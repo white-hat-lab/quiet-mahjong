@@ -75,18 +75,16 @@ Math.random=originalRandom;
 `, context);
 console.log('Passed: group movement, rollback, matching, boundaries, and 100 shuffled boards.');
 
-// Verify the visible notice and the automatic restart timing without real waits.
+// Verify the bottom notice and automatic restart without a popup.
 const endSource=source.slice(source.indexOf('function stopRestart()'),source.indexOf('function newGame()'));
-const elements={stuck:{hidden:true},confirm:{open:false},main:{inert:false},'restart-now':{focus(){}},'restart-countdown':{textContent:''}};
-let timeout,delay,restarted=0;
-const endContext=vm.createContext({document:{getElementById:id=>elements[id],querySelector:name=>elements[name]},setTimeout:(fn,ms)=>{timeout=fn;delay=ms;return 1},setInterval:()=>2,clearTimeout:()=>{},clearInterval:()=>{}});
-vm.runInContext(`let board=[0,1],restartTimer=null,countdownTimer=null,lastChecked='',selected=0,pendingRows=13;const $=id=>document.getElementById(id);function say(){}function hasAvailableMove(){return false}function newGame(){stopRestart();board=[1,1]}${endSource}checkBoardEnd()`,endContext);
-assert.equal(elements.stuck.hidden,false);
-assert.equal(elements.main.inert,true);
-assert.match(elements['restart-countdown'].textContent,/4 seconds/);
+const elements={confirm:{open:false}};
+let timeout,delay;
+const endContext=vm.createContext({document:{getElementById:id=>elements[id]},setTimeout:(fn,ms)=>{timeout=fn;delay=ms;return 1},setInterval:()=>2,clearTimeout:()=>{},clearInterval:()=>{}});
+vm.runInContext(`let board=[0,1],restartTimer=null,countdownTimer=null,lastChecked='',selected=0,pendingRows=13,notice='';const $=id=>document.getElementById(id);function say(text){notice=text}function hasAvailableMove(){return false}function newGame(){stopRestart();board=[1,1]}${endSource}checkBoardEnd()`,endContext);
+assert.match(vm.runInContext('notice',endContext),/No matches left.*4 seconds/);
 assert.equal(delay,4000);
 timeout();
-assert.equal(elements.stuck.hidden,true);
-assert.equal(elements.main.inert,false);
 assert.equal(vm.runInContext('JSON.stringify(board)',endContext),'[1,1]');
-console.log('Passed: no-move detection includes pushes, does not alter the board, and restarts after a visible four-second notice.');
+assert.equal(vm.runInContext('restartTimer',endContext),null);
+assert.ok(!source.includes('id="stuck"'));
+console.log('Passed: bottom-only notice and automatic restart after four seconds.');
